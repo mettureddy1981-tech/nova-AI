@@ -93,30 +93,26 @@ transform: scale(1.05);
 
 <body>
 
+<!-- Google -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+
+<!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
 emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
 
-// ===================== PASSWORD SYSTEM =====================
-let username = prompt("👤 Enter Username:");
-
-let savedPass = localStorage.getItem("nova_password");
-
-if (!savedPass) {
-  let newPass = prompt("🔐 Create your new password:");
-  localStorage.setItem("nova_password", newPass);
-  alert("Password saved! Now login again.");
-  location.reload();
+// ===================== STARS FIX =====================
+function createStars() {
+  for (let i = 0; i < 120; i++) {
+    let star = document.createElement("div");
+    star.className = "star";
+    star.style.left = Math.random() * window.innerWidth + "px";
+    star.style.top = Math.random() * window.innerHeight + "px";
+    document.body.appendChild(star);
+  }
 }
-
-let loginPass = prompt("🔐 Enter Password:");
-
-if (loginPass !== savedPass) {
-  document.body.innerHTML = "<h1>❌ Wrong Password</h1>";
-  throw new Error("Wrong password");
-}
+window.onload = createStars;
 
 // ===================== UI =====================
 document.body.innerHTML += `
@@ -142,35 +138,35 @@ const CHAT_HISTORY_KEY = "novaChatHistory";
 
 // ===================== PRINT =====================
 function print(text, save = true) {
-chat.innerHTML += "<p>" + text + "</p>";
-chat.scrollTop = chat.scrollHeight;
+  chat.innerHTML += "<p>" + text + "</p>";
+  chat.scrollTop = chat.scrollHeight;
 
-if (save) {
-let history = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || "[]");
-history.push(text);
-localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
-}
+  if (save) {
+    let history = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || "[]");
+    history.push(text);
+    localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
+  }
 }
 
 // ===================== CONTACTS =====================
 const CONTACTS = {
-dad: "YOUR_FATHER_EMAIL@example.com"
+  dad: "YOUR_FATHER_EMAIL@example.com"
 };
 
 // ===================== EMAIL =====================
 function sendEmailToContact(contact, message) {
-let email = CONTACTS[contact.toLowerCase()];
-if (!email) return print("❌ Unknown contact");
+  let email = CONTACTS[contact.toLowerCase()];
+  if (!email) return print("❌ Unknown contact");
 
-emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
-to_email: email,
-to_name: contact,
-message: message
-}).then(() => {
-print("📨 Message sent to " + contact);
-}).catch(() => {
-print("❌ Email failed");
-});
+  emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", {
+    to_email: email,
+    to_name: contact,
+    message: message
+  }).then(() => {
+    print("📨 Message sent to " + contact);
+  }).catch(() => {
+    print("❌ Email failed");
+  });
 }
 
 // ===================== NOVA AI =====================
@@ -282,20 +278,26 @@ localStorage.setItem(REMINDER_KEY, JSON.stringify(reminders));
 
 }, 1000);
 
-// ===================== LOAD HISTORY =====================
+// ===================== HISTORY LOAD =====================
 let old = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || "[]");
 old.forEach(m => print(m, false));
 
-// ===================== GOOGLE =====================
+// ===================== GOOGLE FIX =====================
 function connectGoogle() {
-google.accounts.id.initialize({
-client_id: "YOUR_CLIENT_ID.apps.googleusercontent.com",
-callback: () => print("✅ Google Connected")
-});
-google.accounts.id.prompt();
+  if (!window.google || !google.accounts) {
+    alert("Google still loading... try again");
+    return;
+  }
+
+  google.accounts.id.initialize({
+    client_id: "YOUR_CLIENT_ID.apps.googleusercontent.com",
+    callback: () => print("✅ Google Connected")
+  });
+
+  google.accounts.id.prompt();
 }
 
-print("Nova: Hello " + username + " 🌌");
+print("Nova: Hello 🌌");
 
 </script>
 
