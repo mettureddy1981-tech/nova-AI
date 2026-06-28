@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Nova Memory Chat</title>
+<title>Nova Memory Chat</title>
 
 <style>
 body {
@@ -82,27 +82,20 @@ cursor: pointer;
 background: #00c6ff;
 color: white;
 box-shadow: 0 0 10px #00c6ff;
-transition: 0.2s;
-}
-
-button:hover {
-transform: scale(1.05);
 }
 </style>
 </head>
 
 <body>
 
-<!-- Google -->
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-
-<!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
-emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
+/* ================= EMAILJS INIT ================= */
+emailjs.init("k4Hne_y49nQgS9Azp"); // <-- you must paste your real public key
 
-// ===================== ⭐ STARS =====================
+/* ================= STARS ================= */
 function createStars() {
   for (let i = 0; i < 120; i++) {
     let star = document.createElement("div");
@@ -112,9 +105,9 @@ function createStars() {
     document.body.appendChild(star);
   }
 }
-window.onload = createStars;
+setTimeout(createStars, 100);
 
-// ===================== UI =====================
+/* ================= UI ================= */
 document.body.innerHTML += `
 <h1>🌌 Nova Memory Chat</h1>
 
@@ -123,119 +116,80 @@ document.body.innerHTML += `
 <div id="controls">
 <input id="input" placeholder="Talk to Nova..." />
 <button onclick="sendMessage()">🚀 Send</button>
-<button onclick="connectGoogle()">📧 Connect Gmail</button>
 </div>
 `;
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
-// ===================== STORAGE =====================
-const MEMORY_KEY = "novaMemories";
-const NOTES_KEY = "novaNotes";
-const REMINDER_KEY = "novaReminders";
-const CHAT_HISTORY_KEY = "novaChatHistory";
-
-// ===================== USER CONTACTS (IMPORTANT FIX) =====================
+/* ================= CONTACTS ================= */
 let CONTACTS = JSON.parse(localStorage.getItem("nova_contacts") || "{}");
 
-// FIRST TIME SETUP (user defines THEIR dad)
 if (!CONTACTS.dad) {
-  let dadEmail = prompt("👨 Enter YOUR dad's email:");
-  CONTACTS = { dad: dadEmail };
+  let email = prompt("👨 Enter YOUR dad's email:");
+  CONTACTS.dad = email;
   localStorage.setItem("nova_contacts", JSON.stringify(CONTACTS));
-  alert("Contacts saved!");
 }
 
-// ===================== PRINT =====================
-function print(text, save = true) {
+/* ================= PRINT ================= */
+function print(text) {
   chat.innerHTML += "<p>" + text + "</p>";
   chat.scrollTop = chat.scrollHeight;
-
-  if (save) {
-    let history = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || "[]");
-    history.push(text);
-    localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
-  }
 }
 
-// ===================== EMAIL =====================
+/* ================= EMAIL ================= */
 function sendEmailToContact(contact, message) {
+
   let email = CONTACTS[contact.toLowerCase()];
   if (!email) return print("❌ Unknown contact");
 
-  emailjs.send("service_i2kw1kh
-", "template_2k1pgtm
-", {
-    to_email: email,
-    to_name: contact,
-    message: message
-  }).then(() => {
-    print("📨 Message sent to " + contact);
-  }).catch(() => {
+  emailjs.send(
+    "service_i2kw1kh",
+    "template_2k1pgtm",
+    {
+      to_email: email,
+      message: message
+    }
+  )
+  .then(() => print("📨 Message sent to " + contact))
+  .catch((err) => {
+    console.log(err);
     print("❌ Email failed");
   });
 }
 
-// ===================== NOVA AI =====================
+/* ================= NOVA ================= */
 const Nova = {
 reply(input) {
 
 let lower = input.toLowerCase();
 
+if (lower === "date") return new Date().toDateString();
+if (lower === "time") return new Date().toLocaleTimeString();
+
+if (lower.startsWith("text ")) {
+  let parts = input.split(" ");
+  let contact = parts[1];
+  let msg = parts.slice(2).join(" ");
+  sendEmailToContact(contact, msg);
+  return "📨 Sending message...";
+}
+
 if (lower === "new chat") {
-chat.innerHTML = "";
-localStorage.removeItem(CHAT_HISTORY_KEY);
-setTimeout(() => print("🌌 New chat started!"), 100);
-return "Chat cleared";
+  chat.innerHTML = "";
+  return "🌌 New chat started!";
 }
 
 if (lower === "logout") {
-location.reload();
-return "";
-}
-
-if (lower === "time") return "🕒 " + new Date().toLocaleTimeString();
-if (lower === "date") return "📅 " + new Date().toDateString();
-
-if (lower.startsWith("remember ")) {
-let m = JSON.parse(localStorage.getItem(MEMORY_KEY) || "[]");
-m.push(input.slice(9));
-localStorage.setItem(MEMORY_KEY, JSON.stringify(m));
-return "🧠 Saved";
-}
-
-if (lower.startsWith("note ")) {
-let n = JSON.parse(localStorage.getItem(NOTES_KEY) || "[]");
-n.push(input.slice(5));
-localStorage.setItem(NOTES_KEY, JSON.stringify(n));
-return "📝 Saved";
-}
-
-if (lower.startsWith("alert(")) {
-let msg = input.split("(")[1].split(")")[0];
-let time = input.split("at")[1]?.trim();
-
-let r = JSON.parse(localStorage.getItem(REMINDER_KEY) || "[]");
-r.push({ message: msg, time: time, done: false });
-
-localStorage.setItem(REMINDER_KEY, JSON.stringify(r));
-return "⏰ Reminder set";
-}
-
-if (lower.startsWith("text ")) {
-let parts = input.split(" ");
-let contact = parts[1];
-let msg = parts.slice(2).join(" ");
-sendEmailToContact(contact, msg);
-return "📨 Sending message...";
+  location.reload();
+  return "";
 }
 
 return "🤖 I don't understand";
 }
 };
 
-// ===================== SEND =====================
+/* ================= SEND ================= */
 function sendMessage() {
 let text = input.value.trim();
 if (!text) return;
@@ -249,63 +203,16 @@ input.addEventListener("keydown", e => {
 if (e.key === "Enter") sendMessage();
 });
 
-// ===================== REMINDER ENGINE =====================
-setInterval(() => {
-
-let reminders = JSON.parse(localStorage.getItem(REMINDER_KEY) || "[]");
-
-let now = new Date();
-let current = now.getHours() * 60 + now.getMinutes();
-
-reminders.forEach(r => {
-
-if (r.done) return;
-
-let match = r.time?.match(/(\d{1,2}):(\d{2})\s?(am|pm)/i);
-if (!match) return;
-
-let h = parseInt(match[1]);
-let m = parseInt(match[2]);
-let ap = match[3];
-
-if (ap === "pm" && h !== 12) h += 12;
-if (ap === "am" && h === 12) h = 0;
-
-let target = h * 60 + m;
-
-if (current >= target && current <= target + 1) {
-alert("🔔 " + r.message);
-print("🔔 Reminder: " + r.message);
-r.done = true;
-}
-
-});
-
-localStorage.setItem(REMINDER_KEY, JSON.stringify(reminders));
-
-}, 1000);
-
-// ===================== HISTORY LOAD =====================
-let old = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || "[]");
-old.forEach(m => print(m, false));
-
-// ===================== GOOGLE CONNECT =====================
+/* ================= GOOGLE ================= */
 function connectGoogle() {
-  if (!window.google || !google.accounts) {
-    alert("Google still loading...");
-    return;
-  }
-
   google.accounts.id.initialize({
     client_id: "798325821911-8tvc7v3ljp13vu4heth5q0d6ksbie4gs.apps.googleusercontent.com",
     callback: () => print("✅ Google Connected")
   });
-
   google.accounts.id.prompt();
 }
 
 print("Nova: Hello 🌌");
-
 </script>
 
 </body>
