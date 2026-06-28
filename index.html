@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Nova Memory Chat</title>
+<title>Nova AI</title>
 
 <style>
 body {
@@ -83,9 +83,7 @@ color: white;
 
 <body>
 
-<h1>🌌 Nova Memory Chat</h1>
-
-<button onclick="connectGoogle()">Login with Google</button>
+<h1>🌌 Nova AI</h1>
 
 <div id="chat"></div>
 
@@ -94,27 +92,14 @@ color: white;
 <button onclick="sendMessage()">Send</button>
 </div>
 
-<audio id="music" controls></audio>
-
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<audio id="music"></audio>
+<audio id="alertSound"></audio>
 
 <script>
-/* ================= EMAILJS ================= */
-emailjs.init("k4Hne_y49nQgS9Azp");
+/* ================= DATA ================= */
+let memory = JSON.parse(localStorage.getItem("nova_memory") || "[]");
+let notes = JSON.parse(localStorage.getItem("nova_notes") || "[]");
 
-/* ================= CONTACTS ================= */
-let CONTACTS = JSON.parse(localStorage.getItem("nova_contacts") || "{}");
-
-if (!CONTACTS.dad) {
-  let email = prompt("Enter dad email:");
-  if (email) {
-    CONTACTS.dad = email;
-    localStorage.setItem("nova_contacts", JSON.stringify(CONTACTS));
-  }
-}
-
-/* ================= CHAT ================= */
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
@@ -123,154 +108,193 @@ function print(text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ================= EMAIL ================= */
+/* ================= EMAIL (OPTIONAL) ================= */
 function sendEmailToContact(contact, message) {
-  let email = CONTACTS[contact.toLowerCase()];
-  if (!email) return print("Unknown contact");
-
-  emailjs.send(
-    "service_i2kw1kh",
-    "template_2k1pgtm",
-    {
-      to_email: email,
-      message: message
-    }
-  )
-  .then(() => print("Email sent ✔"))
-  .catch(() => print("Email failed ❌"));
+  print("Email system not configured in this demo.");
 }
 
 /* ================= NOVA ================= */
 const Nova = {
-  reply(text) {
-    let lower = text.toLowerCase();
+reply(text) {
+let lower = text.toLowerCase();
 
-    if (lower === "time") return new Date().toLocaleTimeString();
-    if (lower === "date") return new Date().toDateString();
+/* HELP */
+if (lower === "help") {
+return `
+📜 Nova Commands<br><br>
 
-    /* HELP MENU (BR STYLE) */
-    if (lower === "help") {
-      return `
-📌 NOVA COMMAND LIST<br><br>
+💬 Messages<br>
+text dad hi<br>
+text son hi<br><br>
 
-💬 MESSAGES<br>
-text dad &lt;message&gt; → send message to dad<br>
-text son &lt;message&gt; → dad message format<br><br>
+🧠 Memory<br>
+remember I like pizza<br>
+what do you remember<br>
+forget I like pizza<br><br>
 
-⏰ TIME<br>
-time → show current time<br>
-date → show today’s date<br><br>
+📝 Notes<br>
+note Buy milk<br>
+show notes<br>
+find note milk<br>
+delete note Buy milk<br><br>
 
-⏱ REMINDER<br>
-remind me &lt;message&gt; → set reminder (5 sec demo)<br><br>
+🧮 Calculator<br>
+calculate 25 + 5<br><br>
 
-🎵 MUSIC<br>
-play rain → play rain sound<br>
-play music → play default music<br><br>
+⏰ Reminders<br>
+remind me Drink Water<br><br>
 
-🧹 CHAT<br>
-new chat → clear chat<br>
-logout → restart page<br><br>
+🎵 Music<br>
+play rain<br>
+play music<br><br>
 
-❓ HELP<br>
-help → show this list
-      `;
-    }
+🌐 Search<br>
+search JavaScript<br><br>
 
-    /* EMAIL */
-    if (lower.startsWith("text ")) {
-      let parts = text.split(" ");
-      let contact = parts[1];
-      let msg = parts.slice(2).join(" ");
+🕒 Time<br>
+time<br>
+date<br><br>
 
-      sendEmailToContact(contact, msg);
-      return "Sending message to " + contact + "...";
-    }
+🧹 System<br>
+new chat<br>
+logout
+`;
+}
 
-    /* DAD MESSAGE */
-    if (lower.startsWith("text son ")) {
-      let msg = text.replace("text son ", "");
-      print("📩 Dad: " + msg);
-      return "Message received from dad";
-    }
+/* TIME */
+if (lower === "time") return new Date().toLocaleTimeString();
+if (lower === "date") return new Date().toDateString();
 
-    /* REMINDER */
-    if (lower.startsWith("remind me ")) {
-      let msg = text.replace("remind me ", "");
+/* MEMORY */
+if (lower.startsWith("remember ")) {
+let fact = text.replace("remember ", "");
+memory.push(fact);
+localStorage.setItem("nova_memory", JSON.stringify(memory));
+return "Saved memory ✔";
+}
 
-      setTimeout(() => {
-        print("⏰ Reminder: " + msg);
-      }, 5000);
+if (lower === "what do you remember") {
+return memory.length ? memory.join("<br>") : "Nothing stored.";
+}
 
-      return "Reminder set (5 sec demo)";
-    }
+if (lower.startsWith("forget ")) {
+let fact = text.replace("forget ", "");
+memory = memory.filter(m => m !== fact);
+localStorage.setItem("nova_memory", JSON.stringify(memory));
+return "Forgot ✔";
+}
 
-    /* MUSIC */
-    if (lower.startsWith("play ")) {
-      let song = text.replace("play ", "").trim();
-      let music = document.getElementById("music");
+/* NOTES */
+if (lower.startsWith("note ")) {
+let note = text.replace("note ", "");
+notes.push(note);
+localStorage.setItem("nova_notes", JSON.stringify(notes));
+return "Note saved ✔";
+}
 
-      if (song === "rain") {
-        music.src = "rain.mp3";
-      } else if (song === "music") {
-        music.src = "music.mp3";
-      } else {
-        return "Song not found";
-      }
+if (lower === "show notes") return notes.join("<br>") || "No notes.";
 
-      music.play();
-      return "Playing: " + song;
-    }
+if (lower.startsWith("find note ")) {
+let key = text.replace("find note ", "");
+return notes.filter(n => n.includes(key)).join("<br>") || "No match.";
+}
 
-    if (lower === "new chat") {
-      chat.innerHTML = "";
-      return "New chat started";
-    }
+if (lower.startsWith("delete note ")) {
+let del = text.replace("delete note ", "");
+notes = notes.filter(n => n !== del);
+localStorage.setItem("nova_notes", JSON.stringify(notes));
+return "Deleted ✔";
+}
 
-    if (lower === "logout") {
-      location.reload();
-    }
+/* CALCULATOR */
+if (lower.startsWith("calculate ")) {
+let expr = text.replace("calculate ", "");
+try {
+return "Result: " + Function("return " + expr)();
+} catch {
+return "Invalid math";
+}
+}
 
-    return "Type 'help' for commands";
-  }
+/* REMINDER */
+if (lower.startsWith("remind me ")) {
+let msg = text.replace("remind me ", "");
+
+setTimeout(() => {
+print("⏰ Reminder: " + msg);
+
+let alert = document.getElementById("alertSound");
+alert.src = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+alert.play();
+
+}, 5000);
+
+return "Reminder set ✔";
+}
+
+/* MUSIC */
+if (lower.startsWith("play ")) {
+let song = text.replace("play ", "");
+let music = document.getElementById("music");
+
+if (song === "rain") {
+music.src = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3";
+} else if (song === "music") {
+music.src = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3";
+} else {
+return "Song not found";
+}
+
+music.play();
+return "Playing " + song;
+}
+
+/* SEARCH */
+if (lower.startsWith("search ")) {
+let q = text.replace("search ", "");
+return "Searching: " + q;
+}
+
+/* SYSTEM */
+if (lower === "new chat") {
+chat.innerHTML = "";
+return "New chat started";
+}
+
+if (lower === "logout") {
+location.reload();
+}
+
+return "Type help";
+}
 };
 
-/* ================= SEND ================= */
+/* SEND */
 function sendMessage() {
-  let text = input.value.trim();
-  if (!text) return;
+let text = input.value.trim();
+if (!text) return;
 
-  print("You: " + text);
-  print("Nova: " + Nova.reply(text));
+print("You: " + text);
+print("Nova: " + Nova.reply(text));
 
-  input.value = "";
+input.value = "";
 }
 
 input.addEventListener("keydown", e => {
-  if (e.key === "Enter") sendMessage();
+if (e.key === "Enter") sendMessage();
 });
 
-/* ================= STARS ================= */
+/* STARS */
 function createStars() {
-  for (let i = 0; i < 80; i++) {
-    let star = document.createElement("div");
-    star.className = "star";
-    star.style.left = Math.random() * window.innerWidth + "px";
-    star.style.top = Math.random() * window.innerHeight + "px";
-    document.body.appendChild(star);
-  }
+for (let i = 0; i < 60; i++) {
+let star = document.createElement("div");
+star.className = "star";
+star.style.left = Math.random() * window.innerWidth + "px";
+star.style.top = Math.random() * window.innerHeight + "px";
+document.body.appendChild(star);
+}
 }
 createStars();
-
-/* ================= GOOGLE LOGIN ================= */
-function connectGoogle() {
-  google.accounts.id.initialize({
-    client_id: "798325821911-8tvc7v3ljp13vu4heth5q0d6ksbie4gs.apps.googleusercontent.com",
-    callback: () => print("Google login success")
-  });
-
-  google.accounts.id.prompt();
-}
 
 print("Nova ready 🌌");
 </script>
