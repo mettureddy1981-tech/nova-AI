@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html>
 <head>
@@ -7,7 +6,6 @@
 
 <body>
 
-<!-- EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
@@ -16,18 +14,21 @@ emailjs.init({
 });
 
 // =====================
-// LOGIN SYSTEM
+// LOGIN
 // =====================
 
-let username = prompt("👤 Enter Username:");
-
-
+let username = prompt("👤 Enter your name:");
 username = username.trim();
 
+// Father email setup
+let fatherEmail = localStorage.getItem("father_email");
 
+if (!fatherEmail) {
+  fatherEmail = prompt("📧 Enter your father's Gmail:");
+  localStorage.setItem("father_email", fatherEmail);
+}
 
-
-alert("Welcome, " + username + "! 🌌");
+alert("Welcome " + username + "! 🌌");
 
 // =====================
 // BACKGROUND
@@ -44,6 +45,7 @@ document.body.style.background =
 document.body.style.backgroundSize = "400% 400%";
 document.body.style.animation = "bgMove 10s ease infinite";
 
+// CSS animation + stars
 let style = document.createElement("style");
 style.innerHTML = `
 @keyframes bgMove {
@@ -67,11 +69,10 @@ from {opacity: 0.3;}
 to {opacity: 1; transform: scale(1.8);}
 }
 `;
-
 document.head.appendChild(style);
 
-// Create stars
-for (let i = 0; i < 120; i++) {
+// stars
+for (let i = 0; i < 100; i++) {
 let star = document.createElement("div");
 star.className = "star";
 star.style.left = Math.random() * window.innerWidth + "px";
@@ -83,11 +84,6 @@ document.body.appendChild(star);
 // UI
 // =====================
 
-let title = document.createElement("h1");
-title.innerText = "🌌 Nova Memory Chat";
-title.style.textShadow = "0 0 15px cyan";
-document.body.appendChild(title);
-
 let chat = document.createElement("div");
 chat.style.width = "80%";
 chat.style.maxWidth = "800px";
@@ -96,11 +92,9 @@ chat.style.margin = "20px auto";
 chat.style.overflowY = "auto";
 chat.style.background = "rgba(255,255,255,0.1)";
 chat.style.backdropFilter = "blur(10px)";
-chat.style.border = "1px solid rgba(255,255,255,0.2)";
 chat.style.borderRadius = "20px";
 chat.style.padding = "15px";
 chat.style.textAlign = "left";
-chat.style.boxShadow = "0 0 20px rgba(255,255,255,0.2)";
 document.body.appendChild(chat);
 
 let input = document.createElement("input");
@@ -109,21 +103,10 @@ input.style.width = "60%";
 input.style.padding = "15px";
 input.style.borderRadius = "30px";
 input.style.border = "none";
-input.style.outline = "none";
-input.style.fontSize = "16px";
-input.style.marginRight = "10px";
 document.body.appendChild(input);
 
 let button = document.createElement("button");
-button.innerText = "🚀 Send";
-button.style.padding = "15px 25px";
-button.style.border = "none";
-button.style.borderRadius = "30px";
-button.style.background = "#00c6ff";
-button.style.color = "white";
-button.style.fontSize = "16px";
-button.style.cursor = "pointer";
-button.style.boxShadow = "0 0 15px #00c6ff";
+button.innerText = "Send";
 button.onclick = sendMessage;
 document.body.appendChild(button);
 
@@ -131,392 +114,105 @@ document.body.appendChild(button);
 // FUNCTIONS
 // =====================
 
-function print(text, save = true) {
-
+// FIXED PRINT FUNCTION
+function print(text) {
   chat.innerHTML += "<p>" + text + "</p>";
   chat.scrollTop = chat.scrollHeight;
-
-  if (save) {
-    let history =
-      JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY)) || [];
-
-    history.push(text);
-
-    localStorage.setItem(
-      CHAT_HISTORY_KEY,
-      JSON.stringify(history)
-    );
-  }
 }
 
-function playMusic() {
-  const ctx = new AudioContext();
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-
-  osc.frequency.value = 600;
-  gain.gain.value = 0.2;
-
-  osc.start();
-  setTimeout(() => osc.stop(), 1200);
+// MESSAGE FUNCTION
+function message(sender, text) {
+  chat.innerHTML += "<p><b>" + sender + ":</b> " + text + "</p>";
+  chat.scrollTop = chat.scrollHeight;
 }
 
-function sendEmailReminder(message, time) {
-
+// EMAIL TO DAD
+function sendToDad(msg) {
   emailjs.send(
     "service_qki202a",
-    "template_nahnw7g",
+    "template_2k1pgtm",
     {
-      reminder_message: message,
-      time: time
+      to_email: fatherEmail,
+      message: msg,
+      from_name: username
     }
-  )
-  .then(() => {
-    console.log("Email sent!");
-  })
-  .catch((error) => {
-    console.log("Email error:", error);
-  });
+  );
 
+  return "📩 Message sent to Dad!";
 }
-
 
 // =====================
 // NOVA AI
 // =====================
 
-const MEMORY_KEY = "novaMemories";
-const NOTES_KEY = "novaNotes";
-const REMINDER_KEY = "novaReminders";
-const CHAT_HISTORY_KEY = "novaChatHistory";
 const Nova = {
-  reply(input) {
+reply(input) {
 
-    let lower = input.toLowerCase();
+let lower = input.toLowerCase();
 
-    // HELLO
-    if (lower.includes("hello")) {
-      return "Hello " + username + " 🌌";
-    }
-// NEW CHAT
-if (lower === "new chat") {
-
-  chat.innerHTML = "";
-
-  print("Nova: 🌌 New chat started!");
-
-  return "Chat cleared successfully.";
+// HELLO
+if (lower.includes("hello")) {
+return "Hello " + username + " 🌌";
 }
-    // TIME
-    if (lower === "time" ||
-        lower === "what time is it") {
 
-      return "🕒 Current Time: " +
-        new Date().toLocaleTimeString();
-    }
-
-    // DATE
-    if (lower === "date" ||
-        lower === "today's date") {
-
-      return "📅 " + new Date().toDateString();
-    }
-
-    // MEMORY SAVE
-    if (lower.startsWith("remember ")) {
-
-      let mem = input.slice(9);
-
-      let memories =
-        JSON.parse(localStorage.getItem(MEMORY_KEY)) || [];
-
-      memories.push(mem);
-
-      localStorage.setItem(
-        MEMORY_KEY,
-        JSON.stringify(memories)
-      );
-
-      return "🧠 Saved: " + mem;
-    }
-
-    // SHOW MEMORIES
-    if (lower.includes("what do you remember")) {
-
-      let memories =
-        JSON.parse(localStorage.getItem(MEMORY_KEY)) || [];
-
-      return memories.length
-        ? "🧠<br>" + memories.join("<br>")
-        : "Nothing saved.";
-    }
-
-    // FORGET MEMORY
-    if (lower.startsWith("forget ")) {
-
-      let target = input.slice(7).toLowerCase();
-
-      let memories =
-        JSON.parse(localStorage.getItem(MEMORY_KEY)) || [];
-
-      memories = memories.filter(
-        m => m.toLowerCase() !== target
-      );
-
-      localStorage.setItem(
-        MEMORY_KEY,
-        JSON.stringify(memories)
-      );
-
-      return "🗑️ Forgot: " + target;
-    }
-
-    // SAVE NOTE
-    if (lower.startsWith("note ")) {
-
-      let note = input.slice(5);
-
-      let notes =
-        JSON.parse(localStorage.getItem(NOTES_KEY)) || [];
-
-      notes.push(note);
-
-      localStorage.setItem(
-        NOTES_KEY,
-        JSON.stringify(notes)
-      );
-
-      return "📝 Note saved!";
-    }
-
-    // SHOW NOTES
-    if (lower === "show notes") {
-
-      let notes =
-        JSON.parse(localStorage.getItem(NOTES_KEY)) || [];
-
-      return notes.length
-        ? "📝<br>" + notes.join("<br>")
-        : "No notes found.";
-    }
-// SEARCH NOTE
-if (lower.startsWith("find note ")) {
-
-  let keyword = input.slice(10).trim().toLowerCase();
-
-  let notes =
-    JSON.parse(localStorage.getItem(NOTES_KEY)) || [];
-
-  let found = notes.filter(
-    n => n.toLowerCase().includes(keyword)
-  );
-
-  return found.length
-    ? "🔍 Found Notes:<br>" + found.join("<br>")
-    : "No matching notes found.";
+// TEXT DAD
+if (lower.startsWith("text dad ")) {
+let msg = input.replace("text dad ", "");
+return sendToDad(msg);
 }
-    // DELETE NOTE
-    if (lower.startsWith("delete note ")) {
 
-      let target = input.slice(12).trim().toLowerCase();
+// TIME
+if (lower === "time") {
+return new Date().toLocaleTimeString();
+}
 
-      let notes =
-        JSON.parse(localStorage.getItem(NOTES_KEY)) || [];
+// DATE
+if (lower === "date") {
+return new Date().toDateString();
+}
 
-      notes = notes.filter(
-        n => n.toLowerCase() !== target
-      );
-
-      localStorage.setItem(
-        NOTES_KEY,
-        JSON.stringify(notes)
-      );
-
-      return "🗑️ Note deleted.";
-    }
-
-    // CALCULATOR
-    if (lower.startsWith("calculate ")) {
-
-      try {
-        let exp = input.slice(10);
-        return "🧮 Answer: " + eval(exp);
-      } catch {
-        return "Invalid calculation.";
-      }
-    }
-
-    // CREATE REMINDER
-    if (lower.startsWith("alert(")) {
-
-      let msg = input.split("(")[1].split(")")[0];
-      let time = input.split("at")[1].trim().toLowerCase();
-
-      let reminders =
-        JSON.parse(localStorage.getItem(REMINDER_KEY)) || [];
-
-      reminders.push({
-        message: msg,
-        time: time,
-        done: false
-      });
-
-      localStorage.setItem(
-        REMINDER_KEY,
-        JSON.stringify(reminders)
-      );
-
-      return "⏰ Reminder set for " + time;
-    }
-
-    // SHOW REMINDERS
-    if (lower === "show reminders") {
-
-      let reminders =
-        JSON.parse(localStorage.getItem(REMINDER_KEY)) || [];
-
-      return reminders.length
-        ? reminders.map(r =>
-            "⏰ " + r.message + " at " + r.time
-          ).join("<br>")
-        : "No reminders.";
-    }
-
-    // DELETE REMINDER
-    if (lower.startsWith("delete reminder ")) {
-
-      let target = input.slice(18).trim().toLowerCase();
-
-      let reminders =
-        JSON.parse(localStorage.getItem(REMINDER_KEY)) || [];
-
-      reminders = reminders.filter(
-        r => r.message.toLowerCase() !== target
-      );
-
-      localStorage.setItem(
-        REMINDER_KEY,
-        JSON.stringify(reminders)
-      );
-
-      return "🗑️ Reminder deleted.";
-    }
-// WEB SEARCH
+// SEARCH
 if (lower.startsWith("search ")) {
-
-  let query = encodeURIComponent(input.slice(7));
-
- window.open(
-  "https://www.bing.com/search?q=" + query,
-  "_blank"
-);
-  return "🌐 Searching...";
+window.open("https://www.google.com/search?q=" + input.slice(7), "_blank");
+return "🌐 Searching Google...";
 }
-// CLEAR HISTORY
-if (lower === "clear history") {
 
-  localStorage.removeItem(CHAT_HISTORY_KEY);
-
-  chat.innerHTML = "";
-
-  return "🗑️ Chat history cleared.";
+// UPDATE DAD EMAIL
+if (lower.startsWith("set dad email ")) {
+let newEmail = input.replace("set dad email ", "").trim();
+fatherEmail = newEmail;
+localStorage.setItem("father_email", newEmail);
+return "📧 Dad email updated!";
 }
-    // LOGOUT
-    if (lower === "logout") {
-      location.reload();
-      return "Logging out...";
-    }
 
-    return "Tell me more... 🌌";
-  }
+return "Tell me more 🌌";
+}
 };
 
 // =====================
-// CHAT
+// SEND MESSAGE
 // =====================
 
 function sendMessage() {
-  let text = input.value.trim();
-  if (!text) return;
+let text = input.value.trim();
+if (!text) return;
 
-  print("You: " + text);
-  print("Nova: " + Nova.reply(text));
+message("You", text);
+message("Nova", Nova.reply(text));
 
-  input.value = "";
+input.value = "";
 }
 
 input.addEventListener("keydown", e => {
-  if (e.key === "Enter") sendMessage();
+if (e.key === "Enter") sendMessage();
 });
 
 // =====================
-// REMINDER ENGINE
+// STARTUP MESSAGES
 // =====================
 
-setInterval(() => {
-
-  let reminders =
-    JSON.parse(localStorage.getItem(REMINDER_KEY)) || [];
-
-  let now = new Date();
-  let current = now.getHours() * 60 + now.getMinutes();
-
-  reminders.forEach(r => {
-
-    if (r.done) return;
-
-    let match =
-      r.time.match(/(\d{1,2}):(\d{2})\s?(am|pm)/);
-
-    if (!match) return;
-
-    let h = parseInt(match[1]);
-    let m = parseInt(match[2]);
-    let ampm = match[3];
-
-    if (ampm === "pm" && h !== 12) h += 12;
-    if (ampm === "am" && h === 12) h = 0;
-
-    let target = h * 60 + m;
-
-    if (current >= target && current <= target + 1) {
-
-      playMusic();
-
-      alert("🔔 Nova Reminder: " + r.message);
-
-      sendEmailReminder(r.message, r.time);
-
-      print("🔔 Reminder: " + r.message);
-
-      r.done = true;
-
-      localStorage.setItem(
-        REMINDER_KEY,
-        JSON.stringify(reminders)
-      );
-    }
-
-  });
-
-}, 1000);
-
-// LOAD CHAT HISTORY
-
-let oldHistory =
-  JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY)) || [];
-
-oldHistory.forEach(msg => {
-  print(msg, false);
-});
-// =====================
-// STARTUP MESSAGE
-// =====================
-
-print("Nova: Hello " + username + " 🌌");
+message("Nova", "Hello " + username + " 🌌");
+message("Nova", "Dad email loaded: " + fatherEmail);
 
 print(`
 📜 <b>Nova Commands</b><br><br>
@@ -539,6 +235,8 @@ print(`
 ⏰ show reminders<br>
 ⏰ delete reminder Drink Water<br><br>
 
+ text dad hi(sends gmail)<br><br>
+
 🌐 search JavaScript tutorial<br><br>
 
 🆕 new chat<br>
@@ -549,4 +247,3 @@ print(`
 
 </body>
 </html>
-```
