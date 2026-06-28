@@ -257,6 +257,33 @@ function connectGoogle() {
 }
 
 print("Nova ready 🌌");
+if (lower === "help") {
+  return `
+📌 NOVA COMMAND LIST
+
+💬 MESSAGES
+text dad <message>     → send message to dad
+text son <message>     → dad message format
+
+⏰ TIME
+time                   → show current time
+date                   → show today’s date
+
+⏱ REMINDER
+remind me <message>    → set a reminder (demo 5 sec)
+
+🎵 MUSIC
+play rain              → play rain sound
+play music             → play default music
+
+🧹 CHAT
+new chat               → clear chat
+logout                 → restart page
+
+❓ HELP
+help                   → show this list
+  `;
+}
 </script>
 
 </body>
