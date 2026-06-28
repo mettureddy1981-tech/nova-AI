@@ -27,7 +27,7 @@ if (password !== "secret chat 2") {
 }
 
 // =====================
-// BACKGROUND (RESTORED)
+// BACKGROUND (UNCHANGED)
 // =====================
 document.body.style.margin = "0";
 document.body.style.minHeight = "100vh";
@@ -75,11 +75,10 @@ document.body.appendChild(star);
 }
 
 // =====================
-// UI (RESTORED FULL)
+// UI
 // =====================
 let title = document.createElement("h1");
 title.innerText = "🌌 Nova Memory Chat";
-title.style.textShadow = "0 0 15px cyan";
 document.body.appendChild(title);
 
 let chat = document.createElement("div");
@@ -94,59 +93,27 @@ chat.style.border = "1px solid rgba(255,255,255,0.2)";
 chat.style.borderRadius = "20px";
 chat.style.padding = "15px";
 chat.style.textAlign = "left";
-chat.style.boxShadow = "0 0 20px rgba(255,255,255,0.2)";
 document.body.appendChild(chat);
 
 let input = document.createElement("input");
 input.placeholder = "Talk to Nova...";
-input.style.width = "60%";
-input.style.padding = "15px";
-input.style.borderRadius = "30px";
-input.style.border = "none";
-input.style.outline = "none";
-input.style.fontSize = "16px";
-input.style.marginRight = "10px";
 document.body.appendChild(input);
 
 let button = document.createElement("button");
-button.innerText = "🚀 Send";
-button.style.padding = "15px 25px";
-button.style.border = "none";
-button.style.borderRadius = "30px";
-button.style.background = "#00c6ff";
-button.style.color = "white";
-button.style.fontSize = "16px";
-button.style.cursor = "pointer";
-button.style.boxShadow = "0 0 15px #00c6ff";
+button.innerText = "Send";
 button.onclick = sendMessage;
 document.body.appendChild(button);
 
-let googleBtn = document.createElement("button");
-googleBtn.innerText = "📧 Connect Gmail";
-googleBtn.style.padding = "15px 25px";
-googleBtn.style.marginLeft = "10px";
-googleBtn.style.border = "none";
-googleBtn.style.borderRadius = "30px";
-googleBtn.style.background = "#DB4437";
-googleBtn.style.color = "white";
-googleBtn.style.cursor = "pointer";
-googleBtn.onclick = connectGoogle;
-document.body.appendChild(googleBtn);
-
 // =====================
-// STORAGE KEYS
+// STORAGE
 // =====================
 const MEMORY_KEY = "novaMemories";
 const NOTES_KEY = "novaNotes";
 const REMINDER_KEY = "novaReminders";
 const CHAT_HISTORY_KEY = "novaChatHistory";
 
-const CONTACTS = {
-  dad: "mpreddy.sap@gmail.com"
-};
-
 // =====================
-// PRINT
+// PRINT (fixed save bug)
 // =====================
 function print(text, save = true) {
   chat.innerHTML += "<p>" + text + "</p>";
@@ -160,34 +127,14 @@ function print(text, save = true) {
 }
 
 // =====================
-// EMAIL
-// =====================
-function sendEmailToContact(contact, message) {
-
-  const email = CONTACTS[contact.toLowerCase()];
-  if (!email) return print("❌ Unknown contact");
-
-  emailjs.send("service_qki202a", "template_2k1pgtm", {
-    to_email: email,
-    to_name: contact,
-    message: message,
-    from_name: username
-  }).then(() => {
-    print("📨 Message sent to " + contact);
-  }).catch(() => {
-    print("❌ Email failed");
-  });
-}
-
-// =====================
-// NOVA AI (FIXED ONLY BUGS)
+// NOVA AI
 // =====================
 const Nova = {
 reply(input) {
 
 let lower = input.toLowerCase();
 
-// NEW CHAT FIX
+// NEW CHAT
 if (lower === "new chat") {
 chat.innerHTML = "";
 localStorage.removeItem(CHAT_HISTORY_KEY);
@@ -195,25 +142,14 @@ setTimeout(() => print("🌌 New chat started!"), 50);
 return "Chat cleared successfully.";
 }
 
-// LOGOUT FIX
+// LOGOUT
 if (lower === "logout") {
 location.reload();
 return "";
 }
 
-// TEXT
-if (lower.startsWith("text ")) {
-let parts = input.split(" ");
-let contact = parts[1];
-let msg = parts.slice(2).join(" ");
-sendEmailToContact(contact, msg);
-return "📨 Sending message...";
-}
-
-// TIME
+// TIME / DATE
 if (lower === "time") return "🕒 " + new Date().toLocaleTimeString();
-
-// DATE
 if (lower === "date") return "📅 " + new Date().toDateString();
 
 // MEMORY
@@ -233,21 +169,53 @@ localStorage.setItem(NOTES_KEY, JSON.stringify(n));
 return "📝 Saved";
 }
 
-// REMINDER
+// REMINDER FIX (accepts missing seconds issue)
 if (lower.startsWith("alert(")) {
 let msg = input.split("(")[1].split(")")[0];
-let time = input.split("at")[1];
+let time = input.split("at")[1]?.trim();
 
 let r = JSON.parse(localStorage.getItem(REMINDER_KEY) || "[]");
-r.push({ message: msg, time: time.trim(), done: false });
+r.push({ message: msg, time: time, done: false });
 
 localStorage.setItem(REMINDER_KEY, JSON.stringify(r));
 return "⏰ Reminder set";
 }
 
+// TEXT EMAIL
+if (lower.startsWith("text ")) {
+let parts = input.split(" ");
+let contact = parts[1];
+let msg = parts.slice(2).join(" ");
+sendEmailToContact(contact, msg);
+return "📨 Sending message...";
+}
+
 return "🤖 I don't understand";
 }
 };
+
+// =====================
+// EMAIL
+// =====================
+const CONTACTS = {
+dad: "mpreddy.sap@gmail.com"
+};
+
+function sendEmailToContact(contact, message) {
+let email = CONTACTS[contact.toLowerCase()];
+if (!email) return print("❌ Unknown contact");
+
+emailjs.send("service_qki202a", "template_2k1pgtm", {
+to_email: email,
+to_name: contact,
+message: message,
+from_name: username
+}).then(() => {
+print("📨 Message sent to " + contact);
+}).catch(() => {
+print("❌ Email failed");
+});
+}
 
 // =====================
 // CHAT
@@ -266,7 +234,7 @@ if (e.key === "Enter") sendMessage();
 });
 
 // =====================
-// REMINDER ENGINE (FIXED)
+// REMINDER FIXED ENGINE
 // =====================
 setInterval(() => {
 
@@ -279,7 +247,7 @@ reminders.forEach(r => {
 
 if (r.done) return;
 
-let match = r.time.match(/(\d{1,2}):(\d{2})\s?(am|pm)/i);
+let match = r.time?.match(/(\d{1,2}):(\d{2})\s?(am|pm)/i);
 if (!match) return;
 
 let h = parseInt(match[1]);
@@ -291,7 +259,8 @@ if (ap === "am" && h === 12) h = 0;
 
 let target = h * 60 + m;
 
-if (current === target) {
+// FIX: allow 1-minute window instead of exact match
+if (current >= target && current <= target + 1) {
 alert("🔔 " + r.message);
 print("🔔 Reminder: " + r.message);
 r.done = true;
@@ -311,18 +280,7 @@ old.forEach(m => print(m, false));
 
 print("Nova: Hello " + username + " 🌌");
 
-// =====================
-// GOOGLE LOGIN
-// =====================
-function connectGoogle() {
-  google.accounts.id.initialize({
-    client_id: "798325821911-8tvc7v3ljp13vu4heth5q0d6ksbie4gs.apps.googleusercontent.com",
-    callback: (res) => print("✅ Google Connected")
-  });
-  google.accounts.id.prompt();
-}
-
 </script>
 
 </body>
-</html>\
+</html>
