@@ -93,13 +93,11 @@ color: white;
 </div>
 
 <audio id="music"></audio>
-<audio id="alertSound"></audio>
 
 <script>
 /* ================= DATA ================= */
 let memory = JSON.parse(localStorage.getItem("nova_memory") || "[]");
 let notes = JSON.parse(localStorage.getItem("nova_notes") || "[]");
-let CONTACTS = JSON.parse(localStorage.getItem("nova_contacts") || "{}");
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
@@ -109,94 +107,71 @@ function print(text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ================= EMAIL (optional working) ================= */
+/* ================= EMAIL (fake/simple) ================= */
 function sendEmailToContact(contact, message) {
-  print("📩 Email sent to " + contact + ": " + message);
+  print("📩 Message sent to " + contact + ": " + message);
 }
 
-/* ================= NOVA ENGINE ================= */
+/* ================= NOVA ================= */
 const Nova = {
 reply(text) {
 let lower = text.toLowerCase();
 
-/* ================= HELP ================= */
+/* HELP */
 if (lower === "help") {
 return `
 📜 Nova Commands<br><br>
 
-💬 Messages<br>
 text dad hi<br>
 text son hi<br><br>
 
-🧠 Memory<br>
 remember I like pizza<br>
 what do you remember<br>
 forget I like pizza<br><br>
 
-📝 Notes<br>
 note Buy milk<br>
 show notes<br>
 find note milk<br>
 delete note Buy milk<br><br>
 
-🧮 Calculator<br>
 calculate 25 + 5<br><br>
 
-⏰ Reminders<br>
 remind me Drink Water<br><br>
 
-🎵 Music<br>
 play rain<br>
 play music<br><br>
 
-🌐 Search<br>
-search JavaScript<br><br>
-
-🕒 Time<br>
 time<br>
 date<br><br>
 
-🧹 System<br>
 new chat<br>
 logout
 `;
 }
 
-/* ================= TIME ================= */
+/* TIME */
 if (lower === "time") return new Date().toLocaleTimeString();
 if (lower === "date") return new Date().toDateString();
 
-/* ================= FIXED MESSAGE ORDER ================= */
-
-/* DAD MESSAGE */
-if (lower.startsWith("text dad ")) {
-let msg = text.replace("text dad ", "");
-sendEmailToContact("dad", msg);
-return "Sending message to dad...";
-}
-
-/* SON MESSAGE */
-if (lower.startsWith("text son ")) {
-let msg = text.replace("text son ", "");
-print("📩 Dad: " + msg);
-return "Message received";
-}
-
-/* BLOCK WRONG TEXT */
+/* MESSAGE */
 if (lower.startsWith("text ")) {
-return "Use: text dad or text son";
+let parts = text.split(" ");
+let contact = parts[1];
+let msg = parts.slice(2).join(" ");
+sendEmailToContact(contact, msg);
+return "Sending message...";
 }
 
-/* ================= MEMORY ================= */
+/* MEMORY */
 if (lower.startsWith("remember ")) {
 let fact = text.replace("remember ", "");
 memory.push(fact);
 localStorage.setItem("nova_memory", JSON.stringify(memory));
-return "Saved memory ✔";
+return "Saved ✔";
 }
 
 if (lower === "what do you remember") {
-return memory.length ? memory.join("<br>") : "Nothing stored.";
+return memory.length ? memory.join("<br>") : "Nothing.";
 }
 
 if (lower.startsWith("forget ")) {
@@ -206,7 +181,7 @@ localStorage.setItem("nova_memory", JSON.stringify(memory));
 return "Forgot ✔";
 }
 
-/* ================= NOTES ================= */
+/* NOTES */
 if (lower.startsWith("note ")) {
 let note = text.replace("note ", "");
 notes.push(note);
@@ -228,7 +203,7 @@ localStorage.setItem("nova_notes", JSON.stringify(notes));
 return "Deleted ✔";
 }
 
-/* ================= CALCULATOR ================= */
+/* CALCULATOR */
 if (lower.startsWith("calculate ")) {
 let expr = text.replace("calculate ", "");
 try {
@@ -238,23 +213,31 @@ return "Invalid math";
 }
 }
 
-/* ================= REMINDER + SOUND ================= */
+/* ================= REMINDER (ALERT + STOP SOUND) ================= */
 if (lower.startsWith("remind me ")) {
 let msg = text.replace("remind me ", "");
 
 setTimeout(() => {
-print("⏰ Reminder: " + msg);
 
-let alert = document.getElementById("alertSound");
-alert.src = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
-alert.play();
+let alertBox = alert("⏰ Reminder: " + msg + "\nPress OK to stop sound");
+
+let music = document.getElementById("music");
+music.src = "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3";
+music.play();
+
+alertBox; // user clicks OK
+
+music.pause();
+music.currentTime = 0;
+
+print("⏰ Reminder finished: " + msg);
 
 }, 5000);
 
 return "Reminder set ✔";
 }
 
-/* ================= MUSIC ================= */
+/* MUSIC */
 if (lower.startsWith("play ")) {
 let song = text.replace("play ", "");
 let music = document.getElementById("music");
@@ -271,13 +254,7 @@ music.play();
 return "Playing " + song;
 }
 
-/* ================= SEARCH ================= */
-if (lower.startsWith("search ")) {
-let q = text.replace("search ", "");
-return "Searching: " + q;
-}
-
-/* ================= SYSTEM ================= */
+/* SYSTEM */
 if (lower === "new chat") {
 chat.innerHTML = "";
 return "New chat started";
@@ -305,18 +282,6 @@ input.value = "";
 input.addEventListener("keydown", e => {
 if (e.key === "Enter") sendMessage();
 });
-
-/* ================= STARS ================= */
-function createStars() {
-for (let i = 0; i < 60; i++) {
-let star = document.createElement("div");
-star.className = "star";
-star.style.left = Math.random() * window.innerWidth + "px";
-star.style.top = Math.random() * window.innerHeight + "px";
-document.body.appendChild(star);
-}
-}
-createStars();
 
 print("Nova ready 🌌");
 </script>
