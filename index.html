@@ -100,9 +100,10 @@ color: white;
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
+/* ================= EMAILJS ================= */
 emailjs.init("k4Hne_y49nQgS9Azp");
 
-/* CONTACTS */
+/* ================= CONTACTS ================= */
 let CONTACTS = JSON.parse(localStorage.getItem("nova_contacts") || "{}");
 
 if (!CONTACTS.dad) {
@@ -113,7 +114,7 @@ if (!CONTACTS.dad) {
   }
 }
 
-/* CHAT */
+/* ================= CHAT ================= */
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
@@ -122,7 +123,7 @@ function print(text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* EMAIL */
+/* ================= EMAIL ================= */
 function sendEmailToContact(contact, message) {
   let email = CONTACTS[contact.toLowerCase()];
   if (!email) return print("Unknown contact");
@@ -139,7 +140,7 @@ function sendEmailToContact(contact, message) {
   .catch(() => print("Email failed ❌"));
 }
 
-/* NOVA */
+/* ================= NOVA ================= */
 const Nova = {
   reply(text) {
     let lower = text.toLowerCase();
@@ -147,17 +148,32 @@ const Nova = {
     if (lower === "time") return new Date().toLocaleTimeString();
     if (lower === "date") return new Date().toDateString();
 
+    /* HELP MENU */
     if (lower === "help") {
       return `
-📌 HELP MENU:
-- text dad hi → send email to dad
-- text son hi → dad message format
-- remind me ... → reminder (5 sec demo)
-- play rain → play music
-- time → show time
-- date → show date
-- new chat → clear chat
-- logout → refresh page
+📌 NOVA COMMAND LIST
+
+💬 MESSAGES
+text dad <message>     → send message to dad
+text son <message>     → dad message format
+
+⏰ TIME
+time                   → show current time
+date                   → show today’s date
+
+⏱ REMINDER
+remind me <message>    → set a reminder (demo 5 sec)
+
+🎵 MUSIC
+play rain              → play rain sound
+play music             → play default music
+
+🧹 CHAT
+new chat               → clear chat
+logout                 → restart page
+
+❓ HELP
+help                   → show this list
       `;
     }
 
@@ -171,7 +187,7 @@ const Nova = {
       return "Sending message to " + contact + "...";
     }
 
-    /* DAD MESSAGE */
+    /* DAD MESSAGE FORMAT */
     if (lower.startsWith("text son ")) {
       let msg = text.replace("text son ", "");
       print("📩 Dad: " + msg);
@@ -219,7 +235,7 @@ const Nova = {
   }
 };
 
-/* SEND */
+/* ================= SEND MESSAGE ================= */
 function sendMessage() {
   let text = input.value.trim();
   if (!text) return;
@@ -234,7 +250,7 @@ input.addEventListener("keydown", e => {
   if (e.key === "Enter") sendMessage();
 });
 
-/* STARS */
+/* ================= STARS ================= */
 function createStars() {
   for (let i = 0; i < 80; i++) {
     let star = document.createElement("div");
@@ -246,7 +262,7 @@ function createStars() {
 }
 createStars();
 
-/* GOOGLE LOGIN */
+/* ================= GOOGLE LOGIN ================= */
 function connectGoogle() {
   google.accounts.id.initialize({
     client_id: "798325821911-8tvc7v3ljp13vu4heth5q0d6ksbie4gs.apps.googleusercontent.com",
@@ -257,33 +273,6 @@ function connectGoogle() {
 }
 
 print("Nova ready 🌌");
-if (lower === "help") {
-  return `
-📌 NOVA COMMAND LIST
-
-💬 MESSAGES
-text dad <message>     → send message to dad
-text son <message>     → dad message format
-
-⏰ TIME
-time                   → show current time
-date                   → show today’s date
-
-⏱ REMINDER
-remind me <message>    → set a reminder (demo 5 sec)
-
-🎵 MUSIC
-play rain              → play rain sound
-play music             → play default music
-
-🧹 CHAT
-new chat               → clear chat
-logout                 → restart page
-
-❓ HELP
-help                   → show this list
-  `;
-}
 </script>
 
 </body>
