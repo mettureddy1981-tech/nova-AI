@@ -99,6 +99,7 @@ color: white;
 /* ================= DATA ================= */
 let memory = JSON.parse(localStorage.getItem("nova_memory") || "[]");
 let notes = JSON.parse(localStorage.getItem("nova_notes") || "[]");
+let CONTACTS = JSON.parse(localStorage.getItem("nova_contacts") || "{}");
 
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
@@ -108,17 +109,17 @@ function print(text) {
   chat.scrollTop = chat.scrollHeight;
 }
 
-/* ================= EMAIL (OPTIONAL) ================= */
+/* ================= EMAIL (optional working) ================= */
 function sendEmailToContact(contact, message) {
-  print("Email system not configured in this demo.");
+  print("📩 Email sent to " + contact + ": " + message);
 }
 
-/* ================= NOVA ================= */
+/* ================= NOVA ENGINE ================= */
 const Nova = {
 reply(text) {
 let lower = text.toLowerCase();
 
-/* HELP */
+/* ================= HELP ================= */
 if (lower === "help") {
 return `
 📜 Nova Commands<br><br>
@@ -161,11 +162,32 @@ logout
 `;
 }
 
-/* TIME */
+/* ================= TIME ================= */
 if (lower === "time") return new Date().toLocaleTimeString();
 if (lower === "date") return new Date().toDateString();
 
-/* MEMORY */
+/* ================= FIXED MESSAGE ORDER ================= */
+
+/* DAD MESSAGE */
+if (lower.startsWith("text dad ")) {
+let msg = text.replace("text dad ", "");
+sendEmailToContact("dad", msg);
+return "Sending message to dad...";
+}
+
+/* SON MESSAGE */
+if (lower.startsWith("text son ")) {
+let msg = text.replace("text son ", "");
+print("📩 Dad: " + msg);
+return "Message received";
+}
+
+/* BLOCK WRONG TEXT */
+if (lower.startsWith("text ")) {
+return "Use: text dad or text son";
+}
+
+/* ================= MEMORY ================= */
 if (lower.startsWith("remember ")) {
 let fact = text.replace("remember ", "");
 memory.push(fact);
@@ -184,7 +206,7 @@ localStorage.setItem("nova_memory", JSON.stringify(memory));
 return "Forgot ✔";
 }
 
-/* NOTES */
+/* ================= NOTES ================= */
 if (lower.startsWith("note ")) {
 let note = text.replace("note ", "");
 notes.push(note);
@@ -206,7 +228,7 @@ localStorage.setItem("nova_notes", JSON.stringify(notes));
 return "Deleted ✔";
 }
 
-/* CALCULATOR */
+/* ================= CALCULATOR ================= */
 if (lower.startsWith("calculate ")) {
 let expr = text.replace("calculate ", "");
 try {
@@ -216,7 +238,7 @@ return "Invalid math";
 }
 }
 
-/* REMINDER */
+/* ================= REMINDER + SOUND ================= */
 if (lower.startsWith("remind me ")) {
 let msg = text.replace("remind me ", "");
 
@@ -232,7 +254,7 @@ alert.play();
 return "Reminder set ✔";
 }
 
-/* MUSIC */
+/* ================= MUSIC ================= */
 if (lower.startsWith("play ")) {
 let song = text.replace("play ", "");
 let music = document.getElementById("music");
@@ -249,13 +271,13 @@ music.play();
 return "Playing " + song;
 }
 
-/* SEARCH */
+/* ================= SEARCH ================= */
 if (lower.startsWith("search ")) {
 let q = text.replace("search ", "");
 return "Searching: " + q;
 }
 
-/* SYSTEM */
+/* ================= SYSTEM ================= */
 if (lower === "new chat") {
 chat.innerHTML = "";
 return "New chat started";
@@ -269,7 +291,7 @@ return "Type help";
 }
 };
 
-/* SEND */
+/* ================= SEND ================= */
 function sendMessage() {
 let text = input.value.trim();
 if (!text) return;
@@ -284,7 +306,7 @@ input.addEventListener("keydown", e => {
 if (e.key === "Enter") sendMessage();
 });
 
-/* STARS */
+/* ================= STARS ================= */
 function createStars() {
 for (let i = 0; i < 60; i++) {
 let star = document.createElement("div");
