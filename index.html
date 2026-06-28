@@ -148,32 +148,32 @@ const Nova = {
     if (lower === "time") return new Date().toLocaleTimeString();
     if (lower === "date") return new Date().toDateString();
 
-    /* HELP MENU */
+    /* HELP MENU (BR STYLE) */
     if (lower === "help") {
       return `
-📌 NOVA COMMAND LIST
+📌 NOVA COMMAND LIST<br><br>
 
-💬 MESSAGES
-text dad <message>     → send message to dad
-text son <message>     → dad message format
+💬 MESSAGES<br>
+text dad &lt;message&gt; → send message to dad<br>
+text son &lt;message&gt; → dad message format<br><br>
 
-⏰ TIME
-time                   → show current time
-date                   → show today’s date
+⏰ TIME<br>
+time → show current time<br>
+date → show today’s date<br><br>
 
-⏱ REMINDER
-remind me <message>    → set a reminder (demo 5 sec)
+⏱ REMINDER<br>
+remind me &lt;message&gt; → set reminder (5 sec demo)<br><br>
 
-🎵 MUSIC
-play rain              → play rain sound
-play music             → play default music
+🎵 MUSIC<br>
+play rain → play rain sound<br>
+play music → play default music<br><br>
 
-🧹 CHAT
-new chat               → clear chat
-logout                 → restart page
+🧹 CHAT<br>
+new chat → clear chat<br>
+logout → restart page<br><br>
 
-❓ HELP
-help                   → show this list
+❓ HELP<br>
+help → show this list
       `;
     }
 
@@ -187,7 +187,7 @@ help                   → show this list
       return "Sending message to " + contact + "...";
     }
 
-    /* DAD MESSAGE FORMAT */
+    /* DAD MESSAGE */
     if (lower.startsWith("text son ")) {
       let msg = text.replace("text son ", "");
       print("📩 Dad: " + msg);
@@ -235,7 +235,7 @@ help                   → show this list
   }
 };
 
-/* ================= SEND MESSAGE ================= */
+/* ================= SEND ================= */
 function sendMessage() {
   let text = input.value.trim();
   if (!text) return;
