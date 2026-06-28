@@ -54,16 +54,12 @@ padding: 15px;
 border-radius: 20px;
 background: rgba(255,255,255,0.1);
 backdrop-filter: blur(10px);
-border: 1px solid rgba(255,255,255,0.2);
-text-align: left;
 }
 
 #controls {
 display: flex;
 gap: 10px;
 margin: 10px;
-flex-wrap: wrap;
-justify-content: center;
 }
 
 input {
@@ -81,23 +77,33 @@ border: none;
 cursor: pointer;
 background: #00c6ff;
 color: white;
-box-shadow: 0 0 10px #00c6ff;
 }
 </style>
 </head>
 
 <body>
 
+<h1>🌌 Nova Memory Chat</h1>
+
+<button onclick="connectGoogle()">Login with Google</button>
+
+<div id="chat"></div>
+
+<div id="controls">
+<input id="input" placeholder="Talk to Nova..." />
+<button onclick="sendMessage()">Send</button>
+</div>
+
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
-/* ================= EMAILJS INIT ================= */
-emailjs.init("k4Hne_y49nQgS9Azp"); // <-- you must paste your real public key
+/* ================= EMAILJS ================= */
+emailjs.init("k4Hne_y49nQgS9Azp");
 
 /* ================= STARS ================= */
 function createStars() {
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 80; i++) {
     let star = document.createElement("div");
     star.className = "star";
     star.style.left = Math.random() * window.innerWidth + "px";
@@ -105,43 +111,32 @@ function createStars() {
     document.body.appendChild(star);
   }
 }
-setTimeout(createStars, 100);
+createStars();
 
-/* ================= UI ================= */
-document.body.innerHTML += `
-<h1>🌌 Nova Memory Chat</h1>
-
-<div id="chat"></div>
-
-<div id="controls">
-<input id="input" placeholder="Talk to Nova..." />
-<button onclick="sendMessage()">🚀 Send</button>
-</div>
-`;
-
+/* ================= CHAT ================= */
 const chat = document.getElementById("chat");
 const input = document.getElementById("input");
 
-/* ================= CONTACTS ================= */
-let CONTACTS = JSON.parse(localStorage.getItem("nova_contacts") || "{}");
-
-if (!CONTACTS.dad) {
-  let email = prompt("👨 Enter YOUR dad's email:");
-  CONTACTS.dad = email;
-  localStorage.setItem("nova_contacts", JSON.stringify(CONTACTS));
-}
-
-/* ================= PRINT ================= */
 function print(text) {
   chat.innerHTML += "<p>" + text + "</p>";
   chat.scrollTop = chat.scrollHeight;
 }
 
+/* ================= CONTACTS ================= */
+let CONTACTS = JSON.parse(localStorage.getItem("nova_contacts") || "{}");
+
+if (!CONTACTS.dad) {
+  let email = prompt("Enter dad email:");
+  if (email) {
+    CONTACTS.dad = email;
+    localStorage.setItem("nova_contacts", JSON.stringify(CONTACTS));
+  }
+}
+
 /* ================= EMAIL ================= */
 function sendEmailToContact(contact, message) {
-
   let email = CONTACTS[contact.toLowerCase()];
-  if (!email) return print("❌ Unknown contact");
+  if (!email) return print("Unknown contact");
 
   emailjs.send(
     "service_i2kw1kh",
@@ -151,51 +146,46 @@ function sendEmailToContact(contact, message) {
       message: message
     }
   )
-  .then(() => print("📨 Message sent to " + contact))
-  .catch((err) => {
-    console.log(err);
-    print("❌ Email failed");
-  });
+  .then(() => print("Email sent"))
+  .catch(() => print("Email failed"));
 }
 
 /* ================= NOVA ================= */
 const Nova = {
-reply(input) {
+reply(text) {
+let lower = text.toLowerCase();
 
-let lower = input.toLowerCase();
-
-if (lower === "date") return new Date().toDateString();
 if (lower === "time") return new Date().toLocaleTimeString();
+if (lower === "date") return new Date().toDateString();
 
 if (lower.startsWith("text ")) {
-  let parts = input.split(" ");
+  let parts = text.split(" ");
   let contact = parts[1];
   let msg = parts.slice(2).join(" ");
   sendEmailToContact(contact, msg);
-  return "📨 Sending message...";
+  return "Sending message...";
 }
 
 if (lower === "new chat") {
   chat.innerHTML = "";
-  return "🌌 New chat started!";
+  return "New chat started";
 }
 
 if (lower === "logout") {
   location.reload();
-  return "";
 }
 
-return "🤖 I don't understand";
+return "I don't understand";
 }
 };
 
-/* ================= SEND ================= */
 function sendMessage() {
 let text = input.value.trim();
 if (!text) return;
 
 print("You: " + text);
 print("Nova: " + Nova.reply(text));
+
 input.value = "";
 }
 
@@ -203,16 +193,17 @@ input.addEventListener("keydown", e => {
 if (e.key === "Enter") sendMessage();
 });
 
-/* ================= GOOGLE ================= */
+/* ================= GOOGLE LOGIN ================= */
 function connectGoogle() {
   google.accounts.id.initialize({
     client_id: "798325821911-8tvc7v3ljp13vu4heth5q0d6ksbie4gs.apps.googleusercontent.com",
-    callback: () => print("✅ Google Connected")
+    callback: () => print("Google login success")
   });
+
   google.accounts.id.prompt();
 }
 
-print("Nova: Hello 🌌");
+print("Nova ready 🌌");
 </script>
 
 </body>
