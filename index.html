@@ -94,33 +94,15 @@ color: white;
 <button onclick="sendMessage()">Send</button>
 </div>
 
+<!-- MUSIC PLAYER -->
+<audio id="music" controls></audio>
+
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
 /* ================= EMAILJS ================= */
 emailjs.init("k4Hne_y49nQgS9Azp");
-
-/* ================= STARS ================= */
-function createStars() {
-  for (let i = 0; i < 80; i++) {
-    let star = document.createElement("div");
-    star.className = "star";
-    star.style.left = Math.random() * window.innerWidth + "px";
-    star.style.top = Math.random() * window.innerHeight + "px";
-    document.body.appendChild(star);
-  }
-}
-createStars();
-
-/* ================= CHAT ================= */
-const chat = document.getElementById("chat");
-const input = document.getElementById("input");
-
-function print(text) {
-  chat.innerHTML += "<p>" + text + "</p>";
-  chat.scrollTop = chat.scrollHeight;
-}
 
 /* ================= CONTACTS ================= */
 let CONTACTS = JSON.parse(localStorage.getItem("nova_contacts") || "{}");
@@ -131,6 +113,15 @@ if (!CONTACTS.dad) {
     CONTACTS.dad = email;
     localStorage.setItem("nova_contacts", JSON.stringify(CONTACTS));
   }
+}
+
+/* ================= CHAT ================= */
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+
+function print(text) {
+  chat.innerHTML += "<p>" + text + "</p>";
+  chat.scrollTop = chat.scrollHeight;
 }
 
 /* ================= EMAIL ================= */
@@ -146,52 +137,102 @@ function sendEmailToContact(contact, message) {
       message: message
     }
   )
-  .then(() => print("Email sent"))
-  .catch(() => print("Email failed"));
+  .then(() => print("Email sent ✔"))
+  .catch(() => print("Email failed ❌"));
 }
 
 /* ================= NOVA ================= */
 const Nova = {
-reply(text) {
-let lower = text.toLowerCase();
+  reply(text) {
+    let lower = text.toLowerCase();
 
-if (lower === "time") return new Date().toLocaleTimeString();
-if (lower === "date") return new Date().toDateString();
+    if (lower === "time") return new Date().toLocaleTimeString();
+    if (lower === "date") return new Date().toDateString();
 
-if (lower.startsWith("text ")) {
-  let parts = text.split(" ");
-  let contact = parts[1];
-  let msg = parts.slice(2).join(" ");
-  sendEmailToContact(contact, msg);
-  return "Sending message...";
-}
+    /* EMAIL */
+    if (lower.startsWith("text ")) {
+      let parts = text.split(" ");
+      let contact = parts[1];
+      let msg = parts.slice(2).join(" ");
 
-if (lower === "new chat") {
-  chat.innerHTML = "";
-  return "New chat started";
-}
+      sendEmailToContact(contact, msg);
+      return "Sending message to " + contact + "...";
+    }
 
-if (lower === "logout") {
-  location.reload();
-}
+    /* DAD MESSAGE FORMAT */
+    if (lower.startsWith("text son ")) {
+      let msg = text.replace("text son ", "");
+      print("📩 Dad: " + msg);
+      return "Message received from dad";
+    }
 
-return "I don't understand";
-}
+    /* REMINDER */
+    if (lower.startsWith("remind me ")) {
+      let msg = text.replace("remind me ", "");
+
+      setTimeout(() => {
+        print("⏰ Reminder: " + msg);
+      }, 5000);
+
+      return "Reminder set (5 seconds demo)";
+    }
+
+    /* MUSIC */
+    if (lower.startsWith("play ")) {
+      let song = text.replace("play ", "").trim();
+      let music = document.getElementById("music");
+
+      if (song === "rain") {
+        music.src = "rain.mp3"; // add your file
+      } else if (song === "music") {
+        music.src = "music.mp3"; // add your file
+      } else {
+        return "Song not found";
+      }
+
+      music.play();
+      return "Playing: " + song;
+    }
+
+    if (lower === "new chat") {
+      chat.innerHTML = "";
+      return "New chat started";
+    }
+
+    if (lower === "logout") {
+      location.reload();
+    }
+
+    return "Commands: text dad hi, remind me ..., play rain";
+  }
 };
 
+/* ================= SEND ================= */
 function sendMessage() {
-let text = input.value.trim();
-if (!text) return;
+  let text = input.value.trim();
+  if (!text) return;
 
-print("You: " + text);
-print("Nova: " + Nova.reply(text));
+  print("You: " + text);
+  print("Nova: " + Nova.reply(text));
 
-input.value = "";
+  input.value = "";
 }
 
 input.addEventListener("keydown", e => {
-if (e.key === "Enter") sendMessage();
+  if (e.key === "Enter") sendMessage();
 });
+
+/* ================= STARS ================= */
+function createStars() {
+  for (let i = 0; i < 80; i++) {
+    let star = document.createElement("div");
+    star.className = "star";
+    star.style.left = Math.random() * window.innerWidth + "px";
+    star.style.top = Math.random() * window.innerHeight + "px";
+    document.body.appendChild(star);
+  }
+}
+createStars();
 
 /* ================= GOOGLE LOGIN ================= */
 function connectGoogle() {
