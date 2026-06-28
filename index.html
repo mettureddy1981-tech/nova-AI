@@ -102,7 +102,7 @@ transform: scale(1.05);
 <script>
 emailjs.init("YOUR_EMAILJS_PUBLIC_KEY");
 
-// ===================== STARS FIX =====================
+// ===================== ⭐ STARS =====================
 function createStars() {
   for (let i = 0; i < 120; i++) {
     let star = document.createElement("div");
@@ -136,6 +136,17 @@ const NOTES_KEY = "novaNotes";
 const REMINDER_KEY = "novaReminders";
 const CHAT_HISTORY_KEY = "novaChatHistory";
 
+// ===================== USER CONTACTS (IMPORTANT FIX) =====================
+let CONTACTS = JSON.parse(localStorage.getItem("nova_contacts") || "{}");
+
+// FIRST TIME SETUP (user defines THEIR dad)
+if (!CONTACTS.dad) {
+  let dadEmail = prompt("👨 Enter YOUR dad's email:");
+  CONTACTS = { dad: dadEmail };
+  localStorage.setItem("nova_contacts", JSON.stringify(CONTACTS));
+  alert("Contacts saved!");
+}
+
 // ===================== PRINT =====================
 function print(text, save = true) {
   chat.innerHTML += "<p>" + text + "</p>";
@@ -147,11 +158,6 @@ function print(text, save = true) {
     localStorage.setItem(CHAT_HISTORY_KEY, JSON.stringify(history));
   }
 }
-
-// ===================== CONTACTS =====================
-const CONTACTS = {
-  dad: "YOUR_FATHER_EMAIL@example.com"
-};
 
 // ===================== EMAIL =====================
 function sendEmailToContact(contact, message) {
@@ -191,9 +197,8 @@ if (lower === "time") return "🕒 " + new Date().toLocaleTimeString();
 if (lower === "date") return "📅 " + new Date().toDateString();
 
 if (lower.startsWith("remember ")) {
-let mem = input.slice(9);
 let m = JSON.parse(localStorage.getItem(MEMORY_KEY) || "[]");
-m.push(mem);
+m.push(input.slice(9));
 localStorage.setItem(MEMORY_KEY, JSON.stringify(m));
 return "🧠 Saved";
 }
@@ -282,10 +287,10 @@ localStorage.setItem(REMINDER_KEY, JSON.stringify(reminders));
 let old = JSON.parse(localStorage.getItem(CHAT_HISTORY_KEY) || "[]");
 old.forEach(m => print(m, false));
 
-// ===================== GOOGLE FIX =====================
+// ===================== GOOGLE CONNECT =====================
 function connectGoogle() {
   if (!window.google || !google.accounts) {
-    alert("Google still loading... try again");
+    alert("Google still loading...");
     return;
   }
 
